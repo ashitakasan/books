@@ -107,6 +107,91 @@ int any_even_one(unsigned x){
 }
 ```
 
+## 2.65
+```c
+// 每次计算当前位的前 2^n 位的奇偶性，n = 0,1,2,3,4
+int even_ones(unsigned x){
+    x ^= x >> 1;
+    x ^= x >> 2;
+    x ^= x >> 4;
+    x ^= x >> 8;
+    x ^= x >> 16;
+    return !(x & 1);
+}
+
+// 分治思想，每次计算 2^n 个位 1 的个数，n = 0,1,2,3,4
+int even_ones0(unsigned x){
+    x = (x & 0x55555555) + (x >> 1) & 0x55555555;
+    x = (x & 0x33333333) + (x >> 2) & 0x33333333;
+    x = (x & 0x0F0F0F0F) + (x >> 4) & 0x0F0F0F0F;
+    x = (x & 0x00FF00FF) + (x >> 8) & 0x00FF00FF;
+    x = (x & 0x0000FFFF) + (x >> 16) & 0x0000FFFF;
+    return ! (x & 1);
+}
+```
+
+## 2.66
+```c
+// 将 x 变为 00...01...11 形式，并保留最高位
+int leftmost_one(unsigned x){
+    int head = x & 0x80000000;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return head | ((x + 1) >> 1);
+}
+```
+
+## 2.67
+A. 一些编译器在处理大于字长 w 的移位时，会将移位数 `s mod w` 的结果作为移位数  
+B.
+
+```c
+int int_size_is_32(){
+    int set_msb = 1 << 31;
+    int beyond_msb = (1 << 30) << 2;
+    return set_msb && !beyond_msb;
+}
+```
+C.
+
+```c
+int int_size_is_320(){
+    int set_msb = 1 << 15 << 15 << 1;
+    int beyond_msb = 1 << 15 << 15 << 2;
+    return set_msb && !beyond_msb;
+}
+```
+
+## 2.68
+```c
+int lower_bits(int x, int n){
+    int mask = (1 << (n - 1) << 1) - 1;
+    return x | mask;
+}
+```
+
+## 2.69
+```c
+int rotate_right(unsigned x, int n){
+    int mask = (1 << n) - 1;
+    int head = x & mask;
+    return (head << (sizeof(int)*8 - n)) | (x >> n);
+}
+```
+
+## 2.70
+```c
+int fits_bits(int x, int n){
+    int mask = 1 << (n-1);
+    return !!(x & mask);
+}
+```
+
+## 2.71
+
 
 
 
