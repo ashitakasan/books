@@ -191,6 +191,61 @@ int fits_bits(int x, int n){
 ```
 
 ## 2.71
+A. 不能表示负数  
+B.
+
+```c
+int xbyte(packed_t word, int bytenum){
+    return (word >> (bytenum << 3)) - ((word >> 31) << 8);
+}
+```
+
+## 2.72
+A. maxbytes 为 int 类型，计算 maxbytes - sizeof(int) 时，会转换为 unsigned int 再计算，如果 maxbytes < sizeof(int)，则计算结果为很大的整数，使得 if 判断总是成功：
+
+```c
+1 - sizeof(int) = 4294967293
+```
+B.
+
+```c
+void copy_int(int val, void *buf, int maxbytes){
+    if(maxbytes >= (int)sizeof(val))
+        memcpy(buf, (void *)&val, sizeof(val));
+}
+```
+
+## 2.73
+```c
+int saturating_add(int x, int y){
+    int s = x + y;
+    int x0 = x >> 31;           // 取出 x、y、s 首位比特，确定其正负
+    int y0 = y >> 31;           // 正+正=负：正溢出，负+负=正：负溢出
+    int s0 = s >> 31;           // result = s + a * (INT_MAX - s) + b * (INT_MIN - s)
+
+    int a = !x0 && !y0 && !!s0;
+    int b = !!x0 && !!y0 && !s0;
+    return s + (~(a-1) & (INT_MAX - s)) + (~(b-1) & (INT_MIN - s));
+}
+```
+
+## 2.74
+```c
+int tsub_ovf(int x, int y){
+    int z = -y;
+    int s = x + z;
+    if(x > 0 && z > 0 && s < 0)
+        return 1;
+    else if(x < 0 && z < 0 && s >= 0)
+        return 1;
+    else
+        return 0;
+}
+```
+
+## 2.75
+
+
 
 
 
