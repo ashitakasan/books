@@ -244,6 +244,29 @@ int tsub_ovf(int x, int y){
 ```
 
 ## 2.75
+```c
+unsigned unsigned_high_prod(unsigned x, unsigned y){
+    int mid = (x >> 31) * y + (y >> 31) * x;
+    return signed_high_prod(x, y) + mid;
+}
+```
+
+## 2.76
+A. x + (x << 2)  
+B. x + (x << 3)  
+C. (x << 5) - (x << 1)  
+D. (x << 3) - (x << 6)
+
+## 2.77
+```c
+int divide_power2(int x, int k){
+    int sign = !!(x >> 31);
+    int round = sign && (x & ~(~0 << k));
+    return (x >> k) + round;
+}
+```
+
+## 2.78
 
 
 
