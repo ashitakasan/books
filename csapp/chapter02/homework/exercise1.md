@@ -267,6 +267,233 @@ int divide_power2(int x, int k){
 ```
 
 ## 2.78
+```c
+int divide_power2(int x, int k){
+    int sign = !!(x >> 31);
+    int round = sign && (x & ~(~0 << k));
+    return (x >> k) + round;
+}
+
+int mul5div8(int x){
+    int mid = x + (x << 2);
+    return divide_power2(mid, 3);
+}
+```
+
+## 2.79
+```c
+// 低比特位先乘再除，高比特位先除再乘；再根据低比特位计算结果来舍入
+int fiveeighths(int x){
+    int low = x & 0x7;
+    int high = x & ~0x7;
+    int low_res = (low + (low << 2)) >> 3;
+    int high_res = (high >> 3) + (high >> 1);           // 1/8 + 1/2 = 5/8
+    int round = (low & 7) && (x & (1<<31));
+    return high_res + low_res + round;
+}
+```
+
+## 2.80
+A. `~0 << n`  
+B. `(~0 << m) & ~(~0 << (m+n))`
+
+## 2.81
+A. False `x = 0, y = INT_MIN` —— `-x < -y: 0 < -INT_MIN`  
+B. True  `((x+y)<<5)+x-y = 32*(x+y)+x-y = 33*x+31*y`  
+C. False `x = 1, y = -1` —— `~x+~y: 11...10, ~(x+y): 11..11`  
+D. True 算法运算的比特级别是不分符号位的  
+E. True 无论正数负数，末位的比特位都是正系数
+
+## 2.82
+A. Y = y/(2^k-1)  
+a. `1/7`  
+b. `9/15 = 3/5`  
+c. `7/63`
+
+## 2.83
+```c
+int float_ge(float x, float y){
+    unsigned ux = *(unsigned *)&x;
+    unsigned uy = *(unsigned *)&y;
+
+    unsigned sx = ux >> 31;
+    unsigned sy = uy >> 31;
+
+    return (sx+sy == 0) ? (ux >= uy) : (ux <= uy);
+}
+```
+
+## 2.84
+__V = (-1)^s * M * 2^E__  
+`Bias=2^(k-1)-1`  
+A.  
+`e=2^(k-1)+1, E=2, f=1/4, M=5/4, V=5.0, bits=0 10...01 0100...0`  
+B.  
+`if 2^(k-1)-1 >= n: `  
+`e=n+2^(k-1)-1, E=n, f=1-2^(-n), M=2-2^(-n), V=(2-2^(-n))*2^n, bits=0 e 11...1  `  
+`if 2^(k-1)-1 < n: `  
+`e=2^k-2, E=2^(k-1)-1, f=1-2^(1-2^(k-1)), M=2-2^(1-2^(k-1)), V=(2-2^(1-2^(k-1)))*2^(2^(k-1)-1), bits=0 11...10 11...10...0`  
+C.  
+`e=2^k-3, E=2^(k-1)-2, f=0, M=1, V=2^(2^(k-1)-2), bits=0 11...101 00...0`
+
+32位的  
+A: 0x40A00000 (5.0)  
+B: 0x4B7FFFFF (16777215.000000)  
+C: 0x7E800000 (85070591730234615865843651857942052864.000000)
+
+## 2.85
+	  描述		| 	二进制		|		值		| 十进制
+-------------	| -----------	|------------	|----------
+最小正非规格化数| 00...01		| 2^(-63)\*2^(2-2^14)| 3.645199531882474602528405934E-4951
+最小正规格化数	| 00..0110..0	| 2^(2-2^14)	| 3.362103143112093506262677817E-4932
+最大规格化数	| 01..1011..1	| (2-2^(-63))*(2^(2^14-1)) | 1.189731495357231765021263853E+4932
+
+## 2.86
+   描述		| Hex	| 	  M		| 	E	| 	  V
+---------	| ----	| -------	| ----	| -------
+    -0		| 8000	|	  0		|	0	|	-0.0
+  最小>1	| 3F01	| 1+(2^-8)|	0	| 1+(2^-8)
+ 	256		| 4700	|	  0		|	8	|	256.0
+最大非规格化| 7EFF	| 2-2^(-8)|  63	| (2-2^(-8)) * 2^63
+   - ∞		| FF00	|	  0		|	∞	|	 - ∞
+  0x3AA0	| 3AA0	|	13/8	|  -5	|	13/256
+
+## 2.87
+格式A位		|	格式A值		|	格式B位		|	格式B值
+---------	| ----------	| -----------	| ---------
+101110001	|	 -9/16		| 101100010	|	 -9/16
+010110101	|	 208.0		| 011101010	|	 208.0
+100111110	|	-7/1024	| 100001110	|	-7/1014
+000000101	|	 5/2^17	| 000000001	|	 1/1024
+111011000	|	 -2^12		| 111101111	|	 -248.0
+011000100	|	 768.0		| 011110000	|	   +∞
+
+## 2.88
+A. False `x=INT_MAX: (double)x=2147483647, (double)(float)x=2147483648`  
+B. False `x=y=INT_MAX: dx+dx=INT_MAX*2, (double)(x+y)=-2`  
+C. True 由 int 转换而来的 double 相加不会溢出或者丢失精度  
+D. True 对于 int 转来的整浮点数的乘法，交换后结果是不变的，即使计算结果不准确  
+E. False `x=1,y=0: dx/dx=1, dy/dy=NaN`
+
+## 2.89
+```c
+float fpwr2(int x){
+    unsigned exp, frac;
+    unsigned u;
+
+    if(x < -149){       	// -23 + (1 - 127)  太小
+        exp = 0;
+        frac = 0;
+    }
+    else if(x < -126){  	// 1 - 127         非规格化
+        exp = 0;
+        frac = 1 << (x+149);
+    }
+    else if(x < 128){   	// 255 - 127        规格化
+        exp = x + 127;
+        frac = 0;
+    }
+    else {              	// 255              太大
+        exp = 0xFF;
+        frac = 0;
+    }
+    u = exp << 23 | frac;
+    return *(float *)&u;
+}
+```
+
+## 2.90
+A.  
+`0x40490FDB = 0b0 10000000 10010010000111111011011`  
+`Bias=127, e=128, E=1, V=(f+1)*2^E = 1.5707963705062866*2 = 3.1415927410125732`  
+B. `22/7=3+1/7: y=001, k=3, 7/22 = 11.001001001...`  
+C. `223/7=3+10/71: y=10*483939977, k=35, 10/71=11.00100100000011100110110000101011010...`
+从二进制小数点后第 9 位开始不同
+
+## 2.91
+```c
+float_bits float_absval(float_bits f){
+    unsigned exp = f >> 23 & 0xFF;
+    unsigned frac = f & 0x7FFFFF;
+    if(exp == 0xFF && frac != 0)
+        return f;
+    return f & 0x7FFFFFFF;
+}
+```
+
+## 2.92
+```c
+float_bits float_negate(float_bits f){
+    unsigned sign = f >> 31;
+    unsigned exp = f >> 23 & 0xFF;
+    unsigned frac = f & 0x7FFFFF;
+    if(exp == 0xFF && frac != 0)
+        return f;
+    return (!sign << 31) | (exp << 23) | frac;
+}
+```
+
+## 2.93
+```c
+float_bits float_half(float_bits f){
+    unsigned sign = f >> 31;
+    unsigned exp = f >> 23 & 0xFF;
+    unsigned frac = f & 0x7FFFFF;
+    if(exp == 0xFF)                                 // ∞/2 = ∞
+        return f;
+
+    if(exp == 0){
+        frac = (frac >> 1) + ((frac & 3) == 3);     // 最低位为 11 时需要向上舍入
+    }
+    else if(exp == 1){                              // exp 为 1 时需要移到小数位
+        exp = 0;
+        frac = (frac >> 1) + ((frac & 3) == 3) + (1 << 22);
+    }
+    else{
+        exp -= 1;
+    }
+
+    return (sign << 31) | (exp << 23) | frac;
+}
+
+```
+
+## 2.94
+```c
+float_bits float_twice(float_bits f){
+    unsigned sign = f >> 31;
+    unsigned exp = f >> 23 & 0xFF;
+    unsigned frac = f & 0x7FFFFF;
+    if(exp == 0xFF)                     // ∞*2 = ∞
+        return f;
+
+    if(exp == 0){                       // 小数位进位到整数位
+        exp = frac >> 22;
+        frac = frac << 1;
+    }
+    else if(exp == 0xFE){               // 超出最大值，赋值 ∞
+        exp = 0xFF;
+        frac = 0;
+    }
+    else{
+        exp += 1;
+    }
+
+    return (sign << 31) | (exp << 23) | frac;
+}
+```
+
+## 2.95
+
+
+
+
+
+
+
+
+
+
 
 
 
