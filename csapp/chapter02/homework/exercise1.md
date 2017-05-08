@@ -484,20 +484,64 @@ float_bits float_twice(float_bits f){
 ```
 
 ## 2.95
+```c
+float_bits float_i2f(int i){
+    if(i == 0)
+        return i;
 
+    unsigned sign = i & 0x80000000;
+    unsigned u = sign == 0 ? (unsigned)i : (~i + 1);
 
+    unsigned E = 0;
+    unsigned tmp = u;
+    while(tmp > 1){
+        tmp >>= 1;
+        E += 1;
+    }
 
+    unsigned exp = E + 127;
+    unsigned frac = (u - (1<<E)) << (E > 23 ? 0 : 23-E);
+    // 所有 E > 23 的奇整数都不能准确表示，即大于 0x1000000 的奇数
+    if(E > 23){
+        unsigned base = 1 << (E-23);            // base 即精度，两个相邻 float int 的差
+        unsigned base_bits = frac & (base - 1);
+        // 如果 frac 精度以下数超过精度的一半，或精度位及精度下一位都为1，则进位
+        if(base_bits > (base>>1) || ((frac & base) && (frac & (base>>1)))){
+            if((frac | (base-1)) == ((1<<E) - 1)){      // 如果 frac 低 E 位全为 1，则进位到 exp，并清零 frac
+                exp += 1;
+                frac = 0;
+            }
+            else{
+                frac += (base >> 1);            // frac 进位，即加上精度的一半
+            }
+        }
+        frac >>= E-23;
+    }
 
+    return sign | (exp << 23) | frac;
+}
+```
 
+## 2.96
+```c
+int float_f2i(float_bits f){
+    unsigned sign = f & 0x80000000;
+    unsigned exp = (f >> 23) & 0xFF;
+    unsigned frac = f & 0x7FFFFF;
 
+    if(exp < 0x7F)                  // exp < 127，表示 0 ~ 1 的数
+        return 0;
 
+    unsigned E = exp - 127;
+    unsigned remd;
+    if(E <= 23)                     // E >= 23，表示 frac 需要右移
+        remd = frac >> (23 - E);
+    else if(E < 31)                 // 23 < E < 31，表示 frac 需要左移
+        remd = frac << (E - 23);
+    else                            // E > 31，则 f 大于 INT_MAX，直接返回 INT_MAX
+        return 0x80000000;
 
-
-
-
-
-
-
-
-
-
+    unsigned res = (1 << E) | remd;
+    return (sign == 0) ? res : (~res + 1);  // 如果 f 为负，则返回其补码
+}
+```
