@@ -248,6 +248,39 @@ movl	%edx, 44(%eax)			; set p->y = v1 + v2
 > so: __A = 3, B = 7__
 
 ## 3.66
+```nasm
+test:
+push	%ebp						; save %ebp
+mov		%esp, %ebp				; create stack frame
+push	%ebx						; save %ebx
+mov		0x8(%ebp), %eax			; get i, %eax = i
+mov		0xc(%ebp), %ecx			; get bp, %ecx = bp
+imul	$0x1c, %eax, %ebx		; %ebx = %eax * 28 = 28 * i
+lea		0x0(,%eax,8), %edx		; %edx = %eax * 8 = 8 * i
+sub		%eax, %edx				; %edx = 7 * i
+add		0x4(%ecx,%ebx,1), %edx	; %edx = *(bp + 28*i + 4) + 7*i
+mov		0xc8(%ecx), %eax			; %eax = *(bp + 200)
+add		(%ecx), %eax				; %eax = *(bp + 200) + *bp = n
+mov		%eax, 0x8(%ecx,%edx,4)	; *(bp + %edx * 4 + 8) = n
+pop		%ebx						; restore %ebx
+pop		%ebp						; restore %ebp
+ret									; return
+```
+- A.  
+`%eax = *(bp + 200) + *bp --> CNT * sizeof(struct a_struct) = 196;`  
+`%edx = *(bp + 28*i + 4) + 7*i --> sizeof(struct a_struct) = 28;`
+`CNT = 196/28 = 7`
+- B.  
+`bp + %edx * 4 + 8 = bp + 4*7*i + 4*(bp + 28*i + 4) + 8 = 4 + (bp+28*i+4) + 4*(bp+28*i+4) = ap->[ap->idx];`
+	
+	```c
+	struct {
+		int idx;
+		int x[6];
+	} a_struct;
+	```
+
+## 3.67
 
 
 
