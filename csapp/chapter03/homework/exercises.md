@@ -281,7 +281,57 @@ ret									; return
 	```
 
 ## 3.67
+```c
+union ele {
+	struct {
+		int *p;
+		int x;
+	} e1;
+	struct {
+		int y;
+		union ele *next;
+	} e2;
+}
+```
+- A. 
+	- e1.p = 0
+	- e1.x = 4
+	- e2.y = 0
+	- e2.next = 4
+- B. `8 bytes`
+- C.
 
+```nasm
+proc:
+movl	8(%ebp), %edx				; get param up
+movl	4(%edx), %ecx				; get e1.x or e2.next
+movl	(%ecx), %eax				; get *%ecx, so %eax = *(e2.next)
+movl	(%eax), %eax				; %eax = *(*(e2.next).e1.p)
+subl	(%edx), %eax				; (%edx) = *(up), %eax = *(*(e2.next).e1.p) - e2.y
+movl	%eax, 4(%ecx)				; *(e2.next+4) = *(e2.next.e1.x) = %eax
+```
+```c
+void proc(union ele *up){
+	up->e2.next->e1.x = *(up->e2.next->e1.p) - up->e2.y;
+}
+```
+
+## 3.68
+```c
+#define BUFFERSIZE 8
+
+void good_echo(){
+    char buf[BUFFERSIZE];
+    while(fgets(buf, BUFFERSIZE, stdin)){
+        int i;
+        for(i=0; i<BUFFERSIZE; i++){
+            if(buf[i] == 0x31)
+                return;
+        }
+        printf("%s", buf);
+    }
+}
+```
 
 
 
