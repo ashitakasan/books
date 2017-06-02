@@ -333,9 +333,86 @@ void good_echo(){
 }
 ```
 
+## 3.69
+```c
+typedef struct ELE *tree_ptr;
+struct ELE {
+	tree_ptr left;
+	tree_ptr right;
+	long val;
+}
+```
+```nasm
+trace:
+movl	$0, %eax					; clean %eax
+testq	%rdi, %rdi				; test if tp == 0
+je		.L3							;
+.L5
+movq	16(%rdi), %rax			; first param is in %rdi, %rax = tp->val
+movq	(%rdi), %rdi				; get struct ELE first byte, %rdi = tp->left
+testq	%rdi, %rdi				; test if tp->left == 0
+jne		.L5							; if not, continue circulation
+.L3
+rep									; nop
+ret									; return
+```
+- A.
 
+```c
+long trace(tree_ptr tp){
+	long result = 0;
+	if(tp == NULL)
+		return result;
+	while(tp != NULL){
+		result = tp->val;
+		tp = tp->left;
+	}
+	return result;
+}
+```
+- B. `计算一个二叉树最左侧的叶子结点上的值 val`
 
+## 3.70
+```nasm
+traverse:
+movq	%rbx, -24(%rsp)			; save %rbx
+movq	%rbp, -16(%rsp)			; save %rbp
+movq	%r12, -8(%rsp)			; save %r12
+subq	$24, %rsp					; allocate 24bytes
+movq	%rdi, %rbp				; save %rbp = tp
+movabsq	$9223372036854775807, %rax		; %rax = 0x7FFFFFFFFFFFFFFF = LONG_MAX
+testq	%rdi, %rdi				; test if tp == NULL
+je		.L9
+movq	16(%rdi), %rbx			; %rbx = tp->val
+movq	(%rdi), %rdi				; %rdi = tp->left, save as first param tp
+call	traverse					; traverse(tp->left)
+movq	%rax, %r12				; %r12 = traverse(tp->left)
+movq	8(%rbp), %rdi				; %rdi = tp->right, save as first param tp
+call	traverse					; traverse(tp->right)
+cmpq	%rax, %r12				; 
+cmovle	%r12, %rax				; %rax = %r12 <= %rax ? %r12 : %rax;
+cmpq	%rbx, %rax				; 
+cmovg	%rbx, %rax				; %rax = %rax > %rbx ? %rbx : %rax;
+.L9
+movq	(%rsp), %rbx				; restore %rbx
+movq	8(%rsp), %rbp				; restore %rbp
+movq	16(%rsp), %r12			; restore %r12
+addq	$24, %rsp					; release 24bytes
+ret									; return
+```
+- A.
 
-
-
-
+```c
+long traverse(tree_ptr tp)[
+	long result = LONG_MAX;
+	if(tp == NULL)
+		return result;
+	result = tp->val;
+	long left = traverse(tp->left);
+	long right = traverse(tp->right);
+	right = (left <= right) ? left : right;
+	result = (right > result) ? result : right;
+	return result;
+}
+```
+- B. `计算一个二叉树中节点值的最小值`
