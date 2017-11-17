@@ -117,8 +117,45 @@ $$
 $$
 
 ## 1.8
-ax^{2} + by^{2} + c = 0
+$$
+\eqalignno{
+\mathbb E[x] &= \int\_{-\infty}^{+\infty} \mathcal{N}(\mu, \sigma^2) x \ dx\cr
+&= \int\_{-\infty}^{+\infty} 
+\frac{1}{{\sigma \sqrt{2\pi}}} \exp (-\frac{(x-\mu)^2}{2\sigma^2}) x \ d(x-\mu) \cr
+&= \int\_{-\infty}^{+\infty} 
+\frac{1}{{\sigma \sqrt{2\pi}}} \exp (-\frac{y^2}{2\sigma^2}) (y+\mu) \ d(y) \cr
+&= \mu \frac{1}{{\sigma \sqrt{2\pi}}} (2\pi \sigma^2)^{\frac 12} \cr
+&= 1
+}
+$$ 
+$$ \mathbb E[(x - \mu)^2] = var[x] = \sigma^2 $$
+$$ \mathbb E[x^2] -2\mu\mathbb E[x] + \mu^2 = \sigma^2 $$
+$$ var[x] = \mathbb E[x^2] - \mathbb E[x]^2 = \sigma^2 $$
 
+## 1.9
+$$ \frac{d}{dx}\mathcal{N}(x\|\mu,\sigma^2) = \frac{d}{dx}\mathcal{N}(x\|\mu,\sigma^2) \cdot \frac{x-\mu}{\sigma^2} $$
+$$ \frac{d}{dx}\mathcal{N} = 0; so: x = \mu $$
+$$
+\eqalignno{
+\frac{\partial}{\partial \textbf{x}} \mathcal{N}(x\|\boldsymbol{\mu},\boldsymbol{\Sigma}^2) &=  -\frac{1}{2} \mathcal{N}(x\|\boldsymbol{\mu},\boldsymbol{\Sigma}) \nabla_x\\{(\textbf{x}-\boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\textbf{x}-\boldsymbol{\mu}) \\} \cr
+&= -\mathcal{N}(x\|\boldsymbol{\mu},\boldsymbol{\Sigma}) \boldsymbol{\Sigma}^{-1} (\textbf{x}-\boldsymbol{\mu})
+}
+$$
+$$ \frac{\partial}{\partial \textbf{x}} \mathcal{N}(x\|\boldsymbol{\mu},\boldsymbol{\Sigma}^2) = 0; so: \textbf{x} = \boldsymbol{\mu} $$
+
+## 1.10
+$$
+\eqalignno{
+\mathbb E[x + z] &= \iint p(x,z)(x + z) dxdz \cr
+&= \iint p(x)p(z)(x + z) dxdz \cr
+&= \int xp(x) dx \cdot \int p(z) dz + \int zp(z) dz \cdot \int p(x) dx \cr
+&= \mathbb E[x] + \mathbb E[z]
+}
+$$
+$$ var[x + z] = \iint p(x)p(z)(x + z - \mathbb E[x + z])^2 dxdz $$
+$$ (x + z - \mathbb E[x + z])^2 = (x - \mathbb E[x])^2 + (z - \mathbb E[z])^2 + 2(x - \mathbb E[x])(z - \mathbb E[z]) $$
+$$ var[x + z] = \int (x - \mathbb E[x])^2 p(x) dx + \int (z - \mathbb E[z])^2 p(z) dz $$
+$$ var[x + z] = var[x] + var[z] $$
 
 <br><br><br>
 
