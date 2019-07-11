@@ -160,6 +160,7 @@ $$ var[x + z] = var[x] + var[z] $$
 <br><br><br>
 
 ---
+
 __View formulas on github pages with chrome extension [Github with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima) or download and view at localhost__
 <script type="text/javascript" async
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
